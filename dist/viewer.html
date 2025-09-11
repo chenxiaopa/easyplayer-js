@@ -37,6 +37,13 @@
     }
 </style>
 <script>
+    // 参数
+    const params = new URLSearchParams(window.location.search);
+    const url = params.get('url');
+    const autoplay = params.get('autoplay');
+    const muted = params.get('muted');
+    const uniqueId = params.get('uniqueId');
+    let playerInfo = null;
     // 发送信息给父页面
     function sendMessageToParent(messageData) {
         if (window.parent && window.parent !== window) {
@@ -45,6 +52,7 @@
                 timestamp: new Date().toISOString(),
                 url: window.location.href,
                 title: document.title,
+                uniqueId: uniqueId,
                 ...messageData
             };
 
@@ -53,11 +61,6 @@
             console.log('No parent window found');
         }
     }
-    const params = new URLSearchParams(window.location.search);
-    const url = params.get('url');
-    const autoplay = params.get('autoplay');
-    const muted = params.get('muted');
-    let playerInfo = null;
 </script>
 
 <body>
