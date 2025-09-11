@@ -1,0 +1,15 @@
+{
+  "name": "easyplayer-js",
+  "version": "1.0.0",
+  "description": "6.2.0",
+  "main": "dist/EasyPlayer-pro.js",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
