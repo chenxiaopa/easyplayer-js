@@ -1,4 +1,5 @@
-https://github.com/EasyDarwin/EasyPlayer.js
+API地址：https://github.com/EasyDarwin/EasyPlayer.js
+包下载地址：https://github.com/EasyDarwin/EasyPlayer.js
 
 播放器实例
 new EasyPlayerPro(container, config)
@@ -8,7 +9,7 @@ container 获取dom 节点
 
 例: var container = document.getElementById("id");
 
-配置属性 config
+#######################################################配置属性 config#######################################################
 参数	说明	类型	默认值
 isLive	是否直播	Boolean	true
 hasAudio	是否解析音频	Boolean	true
@@ -37,7 +38,7 @@ debug	控制台日志打印	Boolean	false
 注:			
 1.解码模式 MSE > WCS > wasm(simd适合高分辨率)
 
-事件回调
+#######################################################事件回调#######################################################
 事件名	说明
 play	播放事件
 pause	暂时事件
@@ -67,7 +68,7 @@ EasyPlayrPro.on('play', function () {
     console.log('play');
 })
 
-方法
+#######################################################方法#######################################################
 方法名	说明	参数
 play	播放	'url'
 playback	点播播放	'url'
