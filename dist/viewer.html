@@ -15,25 +15,37 @@
         height: 100%;
         padding: 0;
         margin: 0;
-        overflow: hidden;
-    }
-
-    #nc_video_easy_player_box,
-    #play-btn {
-        width: 100%;
-        height: 100%;
-        background-color: black;
         position: relative;
     }
 
-    #play-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    #nc_video_easy_player_box {
+        background-color: black;
+        position: absolute;
+        inset: 0;
     }
 
-    #play-btn svg {
+    #playBtn,
+    #playError,
+    #playTimeout {
+        z-index: 2;
+        background-color: black;
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #playBtn svg {
         cursor: pointer;
+    }
+
+    .errorText {
+        color: rgb(205, 205, 205);
+        font-size: 16px;
+        margin-top: 10px;
+        letter-spacing: 1px;
     }
 </style>
 <script>
@@ -43,6 +55,10 @@
     const autoplay = params.get('autoplay');
     const muted = params.get('muted');
     const uniqueId = params.get('uniqueId');
+    const timeout = params.get('timeout');
+    const errorText = params.get('errorText');
+    const timeoutText = params.get('timeoutText');
+    // 播放器
     let playerInfo = null;
     // 发送信息给父页面
     function sendMessageToParent(messageData) {
@@ -64,7 +80,7 @@
 </script>
 
 <body>
-    <div id="play-btn" style="display: none;" onclick="manualPlay()">
+    <div id="playBtn" style="display: none;" onclick="manualPlay()">
         <svg t="1730861815254" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
             p-id="8053" width="40" height="40">
             <path
@@ -72,13 +88,33 @@
                 fill="#ffffff" p-id="8054"></path>
         </svg>
     </div>
+    <div id="playError" style="display: none;">
+        <svg t="1724830569178" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+            p-id="10496" width="64" height="64">
+            <path
+                d="M725.333333 469.333333c129.6 0 234.666667 105.066667 234.666667 234.666667s-105.066667 234.666667-234.666667 234.666667-234.666667-105.066667-234.666666-234.666667 105.066667-234.666667 234.666666-234.666667z m128-341.333333a128 128 0 0 1 128 128v294.101333a300.224 300.224 0 0 0-85.312-91.221333L896 426.666667h-59.605333c-34.346667-13.76-71.808-21.333333-111.061334-21.333334v-192H298.666667v597.333334h147.626666a298.453333 298.453333 0 0 0 50.282667 85.354666L170.666667 896a128 128 0 0 1-128-128V256a128 128 0 0 1 128-128h682.666666z m-119.466666 661.333333h-17.066667a21.333333 21.333333 0 0 0-21.333333 21.333334v17.066666a21.333333 21.333333 0 0 0 21.333333 21.333334h17.066667a21.333333 21.333333 0 0 0 21.333333-21.333334V810.666667a21.333333 21.333333 0 0 0-21.333333-21.333334zM213.333333 682.666667H128v85.333333a42.666667 42.666667 0 0 0 39.466667 42.56L170.666667 810.666667h42.666666v-128z m520.533334-128h-17.066667a21.333333 21.333333 0 0 0-21.184 18.837333L695.466667 576v149.333333a21.333333 21.333333 0 0 0 18.837333 21.184L716.8 746.666667h17.066667a21.333333 21.333333 0 0 0 21.184-18.837334L755.2 725.333333v-149.333333a21.333333 21.333333 0 0 0-21.333333-21.333333z m-266.026667-187.114667l2.773333 1.6 114.090667 71.296a298.965333 298.965333 0 0 0-154.432 217.002667 42.24 42.24 0 0 1-24.832-35.584L405.333333 618.666667V405.333333c0-32.426667 34.517333-52.608 62.506667-37.781333zM213.333333 426.666667H128v170.666666h85.333333v-170.666666z m0-213.333334H170.666667a42.666667 42.666667 0 0 0-42.56 39.466667L128 256v85.333333h85.333333v-128z m640 0h-42.666666v128h85.333333v-85.333333a42.666667 42.666667 0 0 0-39.466667-42.56L853.333333 213.333333z"
+                fill="#cdcdcd" p-id="10497"></path>
+        </svg>
+        <div class="errorText" id="errorText"></div>
+    </div>
+    <div id="playTimeout" style="display: none;">
+        <svg t="1770556919745" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+            p-id="3373" width="64" height="64">
+            <path
+                d="M730.3168 487.7824a242.5344 242.5344 0 1 1 0.0512 485.0688 242.5344 242.5344 0 0 1 0-485.0688z m4.864 58.2144a188.2112 188.2112 0 0 0-133.7856 55.3984 188.1088 188.1088 0 0 0-55.3984 133.7856 188.2112 188.2112 0 0 0 55.3984 133.7856 188.1088 188.1088 0 0 0 133.7856 55.3984 188.2112 188.2112 0 0 0 133.7856-55.3984 188.3136 188.3136 0 0 0 55.3984-133.7856 188.2112 188.2112 0 0 0-55.3984-133.7856 188.1088 188.1088 0 0 0-133.7856-55.3984zM799.5904 51.2a125.3376 125.3376 0 0 1 124.6208 116.8896l0.256 7.8848v329.472a291.84 291.84 0 0 0-62.0544-43.7248l-0.0512-161.1776-748.8-0.1024V798.72c0 32.1536 24.6784 59.5456 56.0128 62.8224l6.3488 0.3584 297.472-0.1536c12.8 22.9376 28.672 43.9808 47.0016 62.5152H176.0256a125.184 125.184 0 0 1-124.5184-116.8896l-0.2048-7.8848V175.9744a125.184 125.184 0 0 1 116.8896-124.5184L176.0256 51.2h623.5648z m-64 541.2864c13.824 0 22.0672 10.9568 22.0672 20.3776v97.8432h77.3632c9.4208 0 21.4016 10.24 21.4016 25.344s-11.9808 24.576-21.4016 24.576h-87.6544a34.0992 34.0992 0 0 1-34.0992-34.0992v-113.664c0-9.4208 8.5504-20.3776 22.3232-20.3776zM411.8528 378.624c9.5232 0 20.8896 1.9968 30.3616 7.936l136.704 82.7392a290.9184 290.9184 0 0 0-140.9536 280.7808l4.2496-2.3552a53.76 53.76 0 0 1-30.3616 7.9872c-30.3616 0-56.9344-15.872-56.9344-49.664V428.288c0-33.7408 26.5728-49.6128 56.9344-49.6128zM152.1664 118.0672a62.5664 62.5664 0 0 0-38.2976 51.2l-0.3072 6.4v62.7712l1.8432-0.1024h106.1376L152.1664 118.0672z m647.7824-4.7616h-80.4864l72.1408 125.0304h70.7584V175.6672c0-32.1536-24.6784-58.88-56.0128-62.0544l-6.4-0.3072z m-155.3408 0h-88.576l72.0896 125.0304h88.576L644.608 113.3056z m-163.328 0H392.704l72.192 125.0304h88.4736L481.2288 113.3056z m-163.4304 0h-93.696L296.448 238.336h93.5424L317.8496 113.3056z"
+                fill="#cdcdcd" p-id="3374"></path>
+        </svg>
+        <div class="errorText" id="timeoutText"></div>
+    </div>
     <div id="nc_video_easy_player_box"></div>
     <script>
         window.onload = () => {
             let config = {
                 isMute: muted === 'true' ? false : true, //是否渲染音频 false 静音 true 不静音
                 MSE: true,
-                canvasRender: false
+                canvasRender: false,
+                loadTimeReplay: 0,
+                loadTimeOut: Number(timeout)
             }
             let container = document.getElementById('nc_video_easy_player_box');
             playerInfo = new EasyPlayerPro(container, config);
@@ -87,6 +123,16 @@
             });
             playerInfo.on('pause', () => {
                 sendMessageToParent({ message: 'pause' });
+            });
+            playerInfo.on('error', (error) => {
+                console.error('error:', error);
+                document.getElementById('playError').style.display = 'flex';
+                document.getElementById('errorText').innerText = errorText;
+            });
+            playerInfo.on('timeout', (error) => {
+                console.error('timeout:', error);
+                document.getElementById('playTimeout').style.display = 'flex';
+                document.getElementById('timeoutText').innerText = timeoutText;
             });
             sendMessageToParent({ message: 'loaded' });
 
@@ -109,13 +155,13 @@
             if (autoplay === 'true') {
                 playerInfo.play(url);
             } else {
-                document.getElementById('play-btn').style.display = 'flex';
+                document.getElementById('playBtn').style.display = 'flex';
             }
         }
 
         function manualPlay() {
             playerInfo.play(url);
-            document.getElementById('play-btn').style.display = 'none';
+            document.getElementById('playBtn').style.display = 'none';
         }
     </script>
 </body>
