@@ -50,8 +50,26 @@
 </style>
 <script>
     // 参数
+    // 使用正则从原始 search 字符串中提取 url 参数，
+    // 避免 url 值本身含有未编码的 ? 和 & 时被 URLSearchParams 截断。
     const params = new URLSearchParams(window.location.search);
-    const url = params.get('url');
+    const _rawSearch = window.location.search;
+    /**
+     * 从原始 query 字符串安全提取指定参数值。
+     * 对于普通参数（autoplay/muted/uniqueId/timeout/errorText/timeoutText）仍走 URLSearchParams，
+     * 只有 url 参数需要特殊处理：截取 "url=" 之后、直到下一个已知顶层参数之前的全部内容。
+     */
+    function getRawParam(name) {
+        // 匹配 ?name= 或 &name=，捕获其后直到已知顶层参数或字符串结尾的全部内容
+        const knownParams = ['url', 'autoplay', 'muted', 'uniqueId', 'timeout', 'errorText', 'timeoutText'];
+        const stopPattern = knownParams.filter(p => p !== name).map(p => `&${p}=`).join('|');
+        const re = new RegExp(`[?&]${name}=(.*?)(?=${stopPattern.replace(/\[/g, '\\[').replace(/\]/g, '\\]')}|$)`);
+        const m = _rawSearch.match(re);
+        if (!m) return null;
+        // 尝试 decodeURIComponent，如果失败则返回原始值（兼容未编码场景）
+        try { return decodeURIComponent(m[1]); } catch (e) { return m[1]; }
+    }
+    const url = getRawParam('url');
     const autoplay = params.get('autoplay');
     const muted = params.get('muted');
     const uniqueId = params.get('uniqueId');
